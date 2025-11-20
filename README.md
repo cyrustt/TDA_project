@@ -92,7 +92,7 @@ Step 2 — Set environment variables
 export MSD_H5_DIR="/path/to/MillionSongSubset"
 export TASTE_TRIPLETS="/path/to/train_triplets.txt"
 
-# Number of songs to use:
+Number of songs to use:
 export SAMPLE_SONGS=10000     # default
 export SAMPLE_SONGS=50000     # full experiment
 
