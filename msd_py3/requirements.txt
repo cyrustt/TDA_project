@@ -1,0 +1,12 @@
+numpy
+pandas
+tables
+h5py
+scikit-learn
+umap-learn
+hdbscan
+ripser
+persim
+pyarrow
+tqdm
+matplotlib
