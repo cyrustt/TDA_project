@@ -1,104 +1,85 @@
-# msd_py3/extract_genres.py
-# -------------------------
-# Extract (song_id, artist_name, artist_terms[]) from MSD .h5 files
-# and save to ./out/artist_terms.parquet
+# msd_py3/extract_genres_summary.py
+# ----------------------------------
+# Extract (song_id, artist_name, artist_terms[]) from the MSD SUMMARY FILE
 
 import os
 import sys
 import pandas as pd
+import numpy as np
+import h5py
 
-# --- Make sure we can "import msd_py3.*" whether run as a script or module ---
+# --- Resolve project root ---
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
-# Prefer the Py3 getters if present
-try:
-    from msd_py3.hdf5_getters_py3 import (
-        open_h5_file_read,
-        get_song_id,
-        get_artist_name,
-        get_artist_terms,
-    )
-except Exception:
-    # fallback to legacy name if your file is named differently
-    from msd_py3.hdf5_getters import (  # type: ignore
-        open_h5_file_read,
-        get_song_id,
-        get_artist_name,
-        get_artist_terms,
-    )
+# ---- ENV VARIABLES ----
+MSD_SUMMARY_FILE = os.environ.get("MSD_SUMMARY_FILE", "./MSD_summary_file.h5")
+TAG = os.environ.get("TAG", "")
+OUT_PATH = os.path.join(PROJECT_ROOT, f"out_{TAG}", f"artist_terms_{TAG}.parquet")
 
-# ---- Config ----
-# You can override this path by:  export MSD_H5_DIR="/path/to/MillionSongSubset"
-MSD_H5_DIR = os.environ.get("MSD_H5_DIR", os.path.join(PROJECT_ROOT, "MillionSongSubset"))
-OUT_PATH = os.path.join(PROJECT_ROOT, "out", "artist_terms.parquet")
+# optional: restrict songs to those used in feature_pipeline
+ACOUSTIC_FILE = os.environ.get("ACOUSTIC_FILE", None)
 
 
-def _to_str(x):
-    """Decode bytes -> str; pass through str; stringify other types safely."""
+def decode(x):
+    """Decode bytes -> str safely."""
     if isinstance(x, (bytes, bytearray)):
         return x.decode("utf-8", "ignore")
-    if isinstance(x, str):
-        return x
+    if isinstance(x, np.bytes_):
+        return x.astype(str)
     return str(x)
 
 
-def collect_terms(msd_dir):
-    rows = []
-    n_files = 0
-    n_rows = 0
-    n_terms = 0
+def load_song_filter():
+    """Optionally load acoustic file so terms only extracted for those songs."""
+    if ACOUSTIC_FILE is None or not os.path.isfile(ACOUSTIC_FILE):
+        return None
 
-    for root, _, files in os.walk(msd_dir):
-        for fname in files:
-            if not fname.lower().endswith(".h5"):
-                continue
-            n_files += 1
-            path = os.path.join(root, fname)
-            try:
-                h5 = open_h5_file_read(path)
-
-                sid = _to_str(get_song_id(h5))
-                artist = _to_str(get_artist_name(h5))
-
-                terms_arr = get_artist_terms(h5)
-                if terms_arr is None:
-                    terms = []
-                else:
-                    # numpy array -> python list, decode each element
-                    terms = [_to_str(t) for t in terms_arr.tolist()]
-
-                rows.append((sid, artist, terms))
-                n_rows += 1
-                n_terms += len(terms)
-            except Exception:
-                # Skip unreadable/corrupt files quietly
-                pass
-            finally:
-                try:
-                    h5.close()
-                except Exception:
-                    pass
-
-    df = pd.DataFrame(rows, columns=["song_id", "artist_name", "artist_terms"])
-    return df, n_files, n_rows, n_terms
+    df = pd.read_parquet(ACOUSTIC_FILE)
+    return set(df["song_id"].tolist())
 
 
 def main():
-    if not os.path.isdir(MSD_H5_DIR):
-        raise SystemExit(f"ERROR: MSD_H5_DIR does not exist: {MSD_H5_DIR}")
+
+    if not os.path.isfile(MSD_SUMMARY_FILE):
+        raise SystemExit(f"ERROR: summary file not found: {MSD_SUMMARY_FILE}")
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
 
-    df, n_files, n_rows, n_terms = collect_terms(MSD_H5_DIR)
+    keep_songs = load_song_filter()
+    if keep_songs is not None:
+        print(f"[INFO] Restricting to {len(keep_songs)} acoustic-subset songs.")
+
+    rows = []
+
+    with h5py.File(MSD_SUMMARY_FILE, "r") as h5:
+
+        meta = h5["metadata"]["songs"]
+        artist_terms = h5["metadata"]["artist_terms"]
+
+        n = meta.shape[0]
+        print(f"[INFO] Summary contains {n} songs.")
+
+        for i in range(n):
+
+            sid = decode(meta[i]["song_id"])
+
+            if keep_songs is not None and sid not in keep_songs:
+                continue
+
+            artist_name = decode(meta[i]["artist_name"])
+
+            # terms: get indices from artist_terms dataset
+            term_list = [decode(term) for term in artist_terms[i]]
+
+            rows.append((sid, artist_name, term_list))
+
+    df = pd.DataFrame(rows, columns=["song_id", "artist_name", "artist_terms"])
     df.to_parquet(OUT_PATH, index=False)
 
-    print(f"MSD_H5_DIR: {MSD_H5_DIR}")
-    print(f"Scanned .h5 files: {n_files}")
-    print(f"Rows written: {n_rows}")
-    print(f"Total artist_terms tokens: {n_terms}")
+    print(f"[INFO] Rows written: {len(df)}")
     print(f"✅ Saved -> {OUT_PATH}")
 
 
