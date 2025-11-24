@@ -10,3 +10,4 @@ persim
 pyarrow
 tqdm
 matplotlib
+networkx
