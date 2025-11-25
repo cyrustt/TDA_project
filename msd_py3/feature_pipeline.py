@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from sklearn.preprocessing import StandardScaler
-import umap
 import hdbscan
 from ripser import ripser
+import umap
 from persim import bottleneck
 import warnings
 
@@ -17,9 +17,9 @@ warnings.filterwarnings("ignore", message="dgm.*non-finite death", module="persi
 
 # ---------- CONFIG ----------
 MSD_H5_DIR      = os.environ.get('MSD_H5_DIR', './MillionSongSubset')
-MSD_SUMMARY_FILE = os.environ.get('MSD_SUMMARY_FILE', None)
-TASTE_TRIPLETS  = os.environ.get('TASTE_TRIPLETS', '/path/to/train_triplets.txt')
-SAMPLE_SONGS    = int(os.environ.get('SAMPLE_SONGS', '10000'))
+MSD_SUMMARY_FILE = os.environ.get('MSD_SUMMARY_FILE', './msd_summary_file.h5')
+TASTE_TRIPLETS  = os.environ.get('TASTE_TRIPLETS', './train_triplets.txt')
+SAMPLE_SONGS    = int(os.environ.get('SAMPLE_SONGS', '1000'))
 TDA_SUBSAMPLE   = int(os.environ.get('TDA_SUBSAMPLE', '1200'))
 BN_MAX_POINTS   = int(os.environ.get('BN_MAX_POINTS', '800'))
 
@@ -255,40 +255,32 @@ def pairwise_dist(X):
     D = np.sqrt(D2, dtype=np.float32)
     return D
 
-def shortest_path_dist(n, edges, weight_col='w'):
-    """All-pairs shortest paths on undirected weighted graph; safe fallback."""
+def shortest_path_dist(n, edges):
     import heapq
-    if not edges:
-        D = np.ones((n, n), dtype=np.float32); np.fill_diagonal(D, 0.0); return D
 
+    # adjacency list
     adj = [[] for _ in range(n)]
     for a, b, w in edges:
-        d = 1.0 / max(1.0, float(w))
-        adj[a].append((b, d)); adj[b].append((a, d))
+        d = 1.0 / float(w)
+        adj[a].append((b, d))
+        adj[b].append((a, d))
 
-    INF = 1e12
-    D = np.full((n, n), INF, dtype=np.float32)
+    INF = np.inf
+    D = np.full((n, n), INF, dtype=np.float64)
+
     for s in range(n):
-        D[s,s] = 0.0
+        D[s, s] = 0.0
         pq = [(0.0, s)]
         while pq:
-            d,u = heapq.heappop(pq)
-            if d > D[s,u]:
+            d, u = heapq.heappop(pq)
+            if d > D[s, u]:
                 continue
-            for v,w in adj[u]:
+            for v, w in adj[u]:
                 nd = d + w
-                if nd < D[s,v]:
-                    D[s,v] = nd
+                if nd < D[s, v]:
+                    D[s, v] = nd
                     heapq.heappush(pq, (nd, v))
 
-    finite_mask = np.isfinite(D)
-    diag = np.eye(n, dtype=bool)
-    finite_off = D[finite_mask & ~diag]
-    if finite_off.size == 0:
-        D[:] = 1.0; np.fill_diagonal(D, 0.0)
-    else:
-        cap = float(finite_off.max())
-        D[~finite_mask] = cap
     return D
 
 def vietoris_rips_persistence(D):
@@ -359,7 +351,7 @@ def main():
         remap = {old:i for i, old in enumerate(keep_idx)}
         sub_edges = [(remap[a], remap[b], w) for a,b,w in idx_edges if a in kept and b in kept]
         if sub_edges:
-            D_be = shortest_path_dist(len(df_tda), sub_edges, 'w')
+            D_be = shortest_path_dist(len(df_tda), sub_edges)
             print(f"[INFO] Behavioral edges on TDA subset: {len(sub_edges)}")
         else:
             print("[INFO] No behavioral edges on the TDA subset; skipping D_be.")

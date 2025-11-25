@@ -8,6 +8,7 @@ hdbscan
 ripser
 persim
 pyarrow
+umap
 tqdm
 matplotlib
 networkx
