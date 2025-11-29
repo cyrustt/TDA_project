@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", message="dgm.*non-finite death", module="persi
 MSD_H5_DIR      = os.environ.get('MSD_H5_DIR', './MillionSongSubset')
 MSD_SUMMARY_FILE = os.environ.get('MSD_SUMMARY_FILE', './msd_summary_file.h5')
 TASTE_TRIPLETS  = os.environ.get('TASTE_TRIPLETS', './train_triplets.txt')
-SAMPLE_SONGS    = int(os.environ.get('SAMPLE_SONGS', '1000'))
+SAMPLE_SONGS    = int(os.environ.get('SAMPLE_SONGS', '50000'))
 TDA_SUBSAMPLE   = int(os.environ.get('TDA_SUBSAMPLE', '1200'))
 BN_MAX_POINTS   = int(os.environ.get('BN_MAX_POINTS', '800'))
 
@@ -215,7 +215,6 @@ def build_acoustic_table_from_dir(files, k=SAMPLE_SONGS):
 
 # ---------- BEHAVIORAL GRAPH HELPERS ----------
 def load_triplets(path, keep_ids):
-    """Read Taste Profile subset; build co-listen edges (a,b,w) with w>=2."""
     keep = set(keep_ids)
     song_users = {}
     with open(path, 'r', encoding='utf-8', errors='ignore') as fh:
@@ -239,7 +238,7 @@ def load_triplets(path, keep_ids):
                 a, b = (ls[i], ls[j]) if ls[i] < ls[j] else (ls[j], ls[i])
                 edge[(a,b)] = edge.get((a,b), 0) + 1
 
-    edges = [(a,b,w) for (a,b), w in edge.items() if w >= 2]
+    edges = [(a,b,w) for (a,b), w in edge.items() if w >= 0]
     edf = pd.DataFrame(edges, columns=['a','b','w'])
     edf.to_parquet(OUTDIR / f'behavior_edges_{DATA_TAG}.parquet', index=False)
     return edf
@@ -314,6 +313,9 @@ def main():
 
     df = df.reset_index(drop=True)
     song_to_idx = {s:i for i,s in enumerate(df['song_id'])}
+    
+    print("\n[DEBUG] Acoustic songs loaded:", len(df))
+    print("[DEBUG] Unique song_ids:", df['song_id'].nunique())
 
     # FULL acoustic distance (for UMAP)
     X_full = df[NUMERIC_COLS].to_numpy(dtype=np.float32)
@@ -324,46 +326,67 @@ def main():
     idx_edges = []
     if TASTE_TRIPLETS and os.path.isfile(TASTE_TRIPLETS):
         edf = load_triplets(TASTE_TRIPLETS, df['song_id'].tolist())
+        print("[DEBUG] Raw behavioral edges loaded:", len(edf))
         edf = edf[edf['a'].isin(song_to_idx) & edf['b'].isin(song_to_idx)]
+        print("[DEBUG] Edges after song-id filtering:", len(edf))
         idx_edges = [(song_to_idx[a], song_to_idx[b], float(w))
                      for a,b,w in edf[['a','b','w']].to_numpy()]
+        print("[DEBUG] idx_edges (mapped edges):", len(idx_edges))
         print(f"[INFO] Behavioral edges kept: {len(idx_edges)}")
     else:
         print(f"[INFO] Taste Profile file not found at: {TASTE_TRIPLETS}. Skipping behavioral graph.")
 
-    # 3) TDA subsample & distances (this defines D_ac before use)
+    # ---------- TDA SUBSET ----------
     if FAST_MODE:
         df_tda = df.sample(n=min(TDA_SUBSAMPLE, len(df)), random_state=42).reset_index(drop=True)
     else:
-        df_tda = df
+        df_tda = df.reset_index(drop=True)
 
-    # map subsample indices
+    # Save the exact TDA subset for plotting notebooks
+    df_tda.to_parquet(OUTDIR / f"tda_subset_{DATA_TAG}.parquet", index=False)
+
     keep_idx = np.array([song_to_idx[s] for s in df_tda['song_id']], dtype=int)
+    remap = {old: new for new, old in enumerate(keep_idx)}
+
+    # ---------- Acoustic distances (for TDA subset) ----------
     X_tda = df_tda[NUMERIC_COLS].to_numpy(dtype=np.float32)
-
-    # acoustic distances for TDA
     D_ac = pairwise_dist(X_tda)
+    np.save(OUTDIR / f"D_ac_{DATA_TAG}.npy", D_ac)
 
-    # behavioral distances for TDA (if any)
+    # ---------- Behavioral distances (for TDA subset) ----------
     D_be = None
+
     if idx_edges:
         kept = set(keep_idx.tolist())
-        remap = {old:i for i, old in enumerate(keep_idx)}
-        sub_edges = [(remap[a], remap[b], w) for a,b,w in idx_edges if a in kept and b in kept]
-        if sub_edges:
-            D_be = shortest_path_dist(len(df_tda), sub_edges)
-            print(f"[INFO] Behavioral edges on TDA subset: {len(sub_edges)}")
-        else:
-            print("[INFO] No behavioral edges on the TDA subset; skipping D_be.")
-    else:
-        print("[INFO] No behavioral edges available; skipping D_be.")
+        sub_edges = [
+            (remap[a], remap[b], w)
+            for a, b, w in idx_edges
+            if a in kept and b in kept
+        ]
 
-    # 4) Persistence & bottleneck (finite + trimmed)
-    dgms_ac = vietoris_rips_persistence(D_ac)
-    bn_H0 = None; bn_H1 = None
+        print(f"[INFO] Behavioral edges on TDA subset: {len(sub_edges)}")
+
+        if len(sub_edges) > 0:
+            D_be = shortest_path_dist(len(df_tda), sub_edges)
+            np.save(OUTDIR / f"D_be_{DATA_TAG}.npy", D_be)
+    else:
+        print("[INFO] No behavioral edges found; skipping D_be.")
+
+    # ---------- Persistence Diagrams ----------
+    
+    dgms_ac = vietoris_rips_persistence(D_ac)   # already a list [H0, H1]
+    dgms_ac_arr = np.array(dgms_ac, dtype=object)
+    np.save(OUTDIR / f"dgms_ac_{DATA_TAG}.npy", dgms_ac_arr, allow_pickle=True)
+
+    bn_H0 = None
+    bn_H1 = None
+
     if D_be is not None:
         dgms_be = vietoris_rips_persistence(D_be)
+        dgms_be_arr = np.array(dgms_be, dtype=object)
+        np.save(OUTDIR / f"dgms_be_{DATA_TAG}.npy", dgms_be_arr, allow_pickle=True)
 
+        # trimmed finite diag
         ac_H0 = trim_diagram(finite_dgm(dgms_ac[0]), BN_MAX_POINTS) if len(dgms_ac) > 0 else None
         be_H0 = trim_diagram(finite_dgm(dgms_be[0]), BN_MAX_POINTS) if len(dgms_be) > 0 else None
 
@@ -374,9 +397,11 @@ def main():
             bn_H0 = float(bottleneck(ac_H0, be_H0))
         if ac_H1 is not None and len(ac_H1) and be_H1 is not None and len(be_H1):
             bn_H1 = float(bottleneck(ac_H1, be_H1))
-    else:
-        print("[INFO] Skipping bottleneck distance (no behavioral space).")
 
+    else:
+        print("[INFO] Skipping behavioral persistence & bottleneck.")
+
+    # Save bottleneck results
     with open(OUTDIR / f"tda_summary_{DATA_TAG}.json", "w") as f:
         json.dump({'bottleneck_H0': bn_H0, 'bottleneck_H1': bn_H1}, f, indent=2)
 
