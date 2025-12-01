@@ -3,12 +3,12 @@
 A reproducible pipeline for clustering, co-listening graph construction, and persistent homology.
 
 This repository implements a complete workflow for analyzing the Million Song Dataset (MSD) using:
-	•	Acoustic feature extraction (from MSD HDF5 summary files)
-	•	UMAP for nonlinear dimensionality reduction
-	•	HDBSCAN for density-based clustering
-	•	Co-listening behavioral graph from Taste Profile triplets
-	•	Topological Data Analysis (TDA) via persistent homology
-	•	Visualization notebooks comparing acoustic vs behavioral structure
+- Acoustic feature extraction (from MSD HDF5 summary files)
+- UMAP for nonlinear dimensionality reduction
+- HDBSCAN for density-based clustering
+- Co-listening behavioral graph from Taste Profile triplets
+- Topological Data Analysis (TDA) via persistent homology
+- Visualization notebooks comparing acoustic vs behavioral structure
 
 Everything is designed to be fully reproducible, scalable, and friendly for graders/researchers.
 
@@ -27,15 +27,15 @@ You will need two datasets:
 (A) MSD Summary File (≈300MB)
 
 Download:
-	•	Official: http://millionsongdataset.com/sites/default/files/AdditionalFiles/msd_summary_file.h5
-	•	Or use the Google Drive copy included in the instructions
+- Official: http://millionsongdataset.com/sites/default/files/AdditionalFiles/msd_summary_file.h5
+- Or use the Google Drive copy included in the instructions
 
 (B) Taste Profile: train_triplets.txt (≈500MB)
 
 Download:
-•	Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
-•	Or use the included Google Drive link
-•	Or the mini tester file: train_triplets_small.txt
+- Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
+- Or use the included Google Drive link
+- Or the mini tester file: train_triplets_small.txt
 
 ## 2. File Structure
 This is what the file structure should look like, after downloading the required datasets.
@@ -107,11 +107,11 @@ Everything is identical except for dataset size.
 ```
 
 Includes:
-	•	UMAP embedding
-	•	HDBSCAN clusters
-	•	Representative artists
-	•	Behavioral graph visualization
-	•	Persistent diagrams (acoustic vs behavioral)
+- UMAP embedding
+- HDBSCAN clusters
+- Representative artists
+- Behavioral graph visualization
+- Persistent diagrams (acoustic vs behavioral)
 
 
 ## 6. Pipeline Overview
@@ -129,12 +129,12 @@ Find density clusters (no need to pre-specify k).
 From Taste Profile data:
 songs A and B connected if ≥2 users listened to both.
 6.	TDA (persistent homology)
-•	Compute Vietoris–Rips persistence diagrams for acoustic and behavioral spaces
-•	Compare diagrams using bottleneck distance
-•	Save H₀ and H₁ topological summaries
+- Compute Vietoris–Rips persistence diagrams for acoustic and behavioral spaces
+- Compare diagrams using bottleneck distance
+- Save H₀ and H₁ topological summaries
 7.	Visualization
-•	UMAP cluster plot
-•	Genre/artist summaries
-•	Behavioral graph (optionally pruned + sparsified)
+- UMAP cluster plot
+- Genre/artist summaries
+- Behavioral graph (optionally pruned + sparsified)
 
 
