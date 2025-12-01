@@ -28,13 +28,13 @@ You will need two datasets:
 
 Download:
 - Official: http://millionsongdataset.com/sites/default/files/AdditionalFiles/msd_summary_file.h5
-- Or use the Google Drive copy included in the instructions
+- Or use the Google Drive copy: https://drive.google.com/file/d/1VWZMnqdtjZvQY5GC0_Sn3ZD_I1V2LbBU/view?usp=sharing
 
 (B) Taste Profile: train_triplets.txt (≈500MB)
 
 Download:
 - Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
-- Or use the included Google Drive link
+- Or use the Google Drive copy: https://drive.google.com/file/d/1VWZMnqdtjZvQY5GC0_Sn3ZD_I1V2LbBU/view?usp=sharing
 
 ## 2. File Structure
 This is what the file structure should look like, after downloading the required datasets.
