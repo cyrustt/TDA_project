@@ -116,25 +116,33 @@ Includes:
 
 ## 6. Pipeline Overview
 
-The full process is:
-1.	Sampling. 
-Randomly sample SAMPLE_SONGS from the MSD summary file.
-2.	Acoustic Feature Extraction
-Extract tempo, loudness, key, mode, duration, danceability, energy, then z-score normalize.
-3.	UMAP Embedding
-Compute a 2D embedding from standardized features.
-4.	HDBSCAN Clustering
-Find density clusters (no need to pre-specify k).
-5.	Co-listening Graph
-From Taste Profile data:
-songs A and B connected if ≥2 users listened to both.
-6.	TDA (persistent homology)
-- Compute Vietoris–Rips persistence diagrams for acoustic and behavioral spaces
-- Compare diagrams using bottleneck distance
-- Save H₀ and H₁ topological summaries
-7.	Visualization
-- UMAP cluster plot
-- Genre/artist summaries
-- Behavioral graph (optionally pruned + sparsified)
+The full processing pipeline consists of the following steps:
+
+1. **Sampling**  
+   Randomly sample `SAMPLE_SONGS` tracks from the MSD summary file for scalable experimentation.
+
+2. **Acoustic Feature Extraction**  
+   Extract tempo, loudness, key, mode, duration, danceability, and energy from the MSD summary file, then apply **z-score normalization** across all numerical features.
+
+3. **UMAP Embedding**  
+   Compute a 2D nonlinear embedding from the standardized acoustic feature space to visualize global and local similarity.
+
+4. **HDBSCAN Clustering**  
+   Apply density-based clustering (no need to pre-specify the number of clusters). Outputs robust clusters and a “noise” group (cluster = –1).
+
+5. **Co-listening Graph Construction**  
+   Using the Taste Profile subset:  
+   Songs `A` and `B` are connected if **≥ 2 users** listened to both.  
+   This produces a weighted behavioral graph encoding user-similarity structure.
+
+6. **Topological Data Analysis (TDA)**  
+   - Build **Vietoris–Rips persistence diagrams** for both the acoustic and behavioral distance spaces.  
+   - Compute **bottleneck distances** to quantify structural similarity between the two modalities.  
+   - Save finite H₀ (connected components) and H₁ (cycles/loops) summaries.
+
+7. **Visualization**  
+   - UMAP cluster plot  
+   - Cluster-level genre & artist summaries  
+   - Behavioral co-listening graph (optionally **pruned** and **sparsified**) for interpretability
 
 
