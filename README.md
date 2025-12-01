@@ -117,8 +117,8 @@ Includes:
 ## 6. Pipeline Overview
 
 The full process is:
-1.	Sampling
-	Randomly sample SAMPLE_SONGS from the MSD summary file.
+1.	Sampling. 
+Randomly sample SAMPLE_SONGS from the MSD summary file.
 2.	Acoustic Feature Extraction
 Extract tempo, loudness, key, mode, duration, danceability, energy, then z-score normalize.
 3.	UMAP Embedding
