@@ -35,7 +35,6 @@ Download:
 Download:
 - Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
 - Or use the included Google Drive link
-- Or the mini tester file: train_triplets_small.txt
 
 ## 2. File Structure
 This is what the file structure should look like, after downloading the required datasets.
@@ -61,7 +60,7 @@ train_triplets_small.txt
 This is the recommended way to test the pipeline end-to-end.
 ```python
 export MSD_SUMMARY_FILE="./msd_summary_file.h5"
-export TASTE_TRIPLETS="./train_triplets_small.txt"
+export TASTE_TRIPLETS="./train_triplets.txt"
 export SAMPLE_SONGS=1000
 
 python msd_py3/feature_pipeline.py
