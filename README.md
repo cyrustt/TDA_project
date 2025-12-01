@@ -26,16 +26,16 @@ You will need two datasets:
 
 (A) MSD Summary File (≈300MB)
 
-	Download:
-		•	Official: http://millionsongdataset.com/sites/default/files/AdditionalFiles/msd_summary_file.h5
-		•	Or use the Google Drive copy included in the instructions
+Download:
+	•	Official: http://millionsongdataset.com/sites/default/files/AdditionalFiles/msd_summary_file.h5
+	•	Or use the Google Drive copy included in the instructions
 
 (B) Taste Profile: train_triplets.txt (≈500MB)
 
-	Download:
-		•	Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
-		•	Or use the included Google Drive link
-		•	Or the mini tester file: train_triplets_small.txt
+Download:
+•	Official: http://labrosa.ee.columbia.edu/~dpwe/tmp/train_triplets.txt.zip
+•	Or use the included Google Drive link
+•	Or the mini tester file: train_triplets_small.txt
 
 ## 2. File Structure
 This is what the file structure should look like, after downloading the required datasets.
@@ -117,24 +117,24 @@ Includes:
 ## 6. Pipeline Overview
 
 The full process is:
-	1.	Sampling
+1.	Sampling
 Randomly sample SAMPLE_SONGS from the MSD summary file.
-	2.	Acoustic Feature Extraction
+2.	Acoustic Feature Extraction
 Extract tempo, loudness, key, mode, duration, danceability, energy, then z-score normalize.
-	3.	UMAP Embedding
+3.	UMAP Embedding
 Compute a 2D embedding from standardized features.
-	4.	HDBSCAN Clustering
+4.	HDBSCAN Clustering
 Find density clusters (no need to pre-specify k).
-	5.	Co-listening Graph
+5.	Co-listening Graph
 From Taste Profile data:
 songs A and B connected if ≥2 users listened to both.
-	6.	TDA (persistent homology)
-	•	Compute Vietoris–Rips persistence diagrams for acoustic and behavioral spaces
-	•	Compare diagrams using bottleneck distance
-	•	Save H₀ and H₁ topological summaries
-	7.	Visualization
-	•	UMAP cluster plot
-	•	Genre/artist summaries
-	•	Behavioral graph (optionally pruned + sparsified)
+6.	TDA (persistent homology)
+•	Compute Vietoris–Rips persistence diagrams for acoustic and behavioral spaces
+•	Compare diagrams using bottleneck distance
+•	Save H₀ and H₁ topological summaries
+7.	Visualization
+•	UMAP cluster plot
+•	Genre/artist summaries
+•	Behavioral graph (optionally pruned + sparsified)
 
 
