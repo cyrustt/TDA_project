@@ -147,3 +147,4 @@ The full processing pipeline consists of the following steps:
    - Behavioral co-listening graph (optionally **pruned** and **sparsified**) for interpretability
 
 
+_Acknowledgement: This document was partially drafted and revised with the assistance of ChatGPT (OpenAI, 2025) to improve clarity and organization._
