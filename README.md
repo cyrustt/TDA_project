@@ -1,4 +1,4 @@
-Topological & Acoustic Structure of the Million Song Dataset
+# Topological & Acoustic Structure of the Million Song Dataset
 
 A reproducible pipeline for clustering, co-listening graph construction, and persistent homology.
 
@@ -13,7 +13,7 @@ This repository implements a complete workflow for analyzing the Million Song Da
 Everything is designed to be fully reproducible, scalable, and friendly for graders/researchers.
 
 
-1. Requirements
+## 1. Requirements
 
 Create a virtual environment:
 ```python
@@ -37,8 +37,26 @@ You will need two datasets:
 		•	Or use the included Google Drive link
 		•	Or the mini tester file: train_triplets_small.txt
 
+## 2. File Structure
+This is what the file structure should look like, after downloading the required datasets.
 
-2. Quick Start (1000-song test subset)
+```
+msd_py3/
+    feature_pipeline.py       # main pipeline
+    hdf5_getters.py           # official MSD helper functions
+out_XXXX/
+    acoustic_XXXX.parquet
+    acoustic_umap_XXXX.parquet
+    behavior_edges_XXXX.parquet
+    ...
+1000_analysis.ipynb
+50000_analysis.ipynb
+msd_summary_file.h5
+train_triplets.txt
+train_triplets_small.txt
+```
+
+## 3. Quick Start (1000-song test subset)
 
 This is the recommended way to test the pipeline end-to-end.
 ```python
@@ -62,8 +80,7 @@ out_1000/
     tda_summary_1000.json
 ```
 
-
-3. Full Pipeline (Large scale, 50k–100k songs)
+## 4. Full Pipeline (Large scale, 50k–100k songs)
 ```python
 export MSD_SUMMARY_FILE="./msd_summary_file.h5"
 export TASTE_TRIPLETS="./train_triplets.txt"
@@ -83,7 +100,7 @@ out_50000/
 Everything is identical except for dataset size.
 
 
-4. Notebooks
+## 5. Notebooks
 ```
 1000_analysis.ipynb
 50000_analysis.ipynb
@@ -97,7 +114,7 @@ Includes:
 	•	Persistent diagrams (acoustic vs behavioral)
 
 
-5. Pipeline Overview
+## 6. Pipeline Overview
 
 The full process is:
 	1.	Sampling
@@ -121,18 +138,3 @@ songs A and B connected if ≥2 users listened to both.
 	•	Behavioral graph (optionally pruned + sparsified)
 
 
-6. File Structure
-```
-msd_py3/
-    feature_pipeline.py       # main pipeline
-    hdf5_getters.py           # official MSD helper functions
-out_XXXX/
-    acoustic_XXXX.parquet
-    acoustic_umap_XXXX.parquet
-    behavior_edges_XXXX.parquet
-    ...
-analysis notebooks...
-msd_summary_file.h5
-train_triplets.txt
-train_triplets_small.txt
-```
