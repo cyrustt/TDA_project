@@ -48,6 +48,8 @@ out_XXXX/
     acoustic_umap_XXXX.parquet
     behavior_edges_XXXX.parquet
     ...
+out_
+	artist_terms_.parquet	  # contains the artists for each song
 1000_analysis.ipynb
 50000_analysis.ipynb
 msd_summary_file.h5
