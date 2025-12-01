@@ -2,7 +2,6 @@
 train_triplets.txt
 MillionSongSubset/
 out/
-*.parquet
 .venv/
 __pycache__/
 train_triplets.txt
