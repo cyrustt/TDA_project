@@ -9,6 +9,7 @@ This repository implements a complete workflow for analyzing the Million Song Da
 - Co-listening behavioral graph from Taste Profile triplets
 - Topological Data Analysis (TDA) via persistent homology
 - Visualization notebooks comparing acoustic vs behavioral structure
+- Cycle Analysis notebook to identify and visualize H1 loops
 
 Everything is designed to be fully reproducible, scalable, and friendly for graders/researchers.
 
@@ -55,6 +56,7 @@ out_
 msd_summary_file.h5
 train_triplets.txt
 train_triplets_small.txt
+cycle_analysis.ipynb
 ```
 
 ## 3. Quick Start (1000-song test subset)
