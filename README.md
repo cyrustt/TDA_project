@@ -15,12 +15,11 @@ Everything is designed to be fully reproducible, scalable, and friendly for grad
 
 ## Representative result
 
-In the 50,000-song run, the behavioral pipeline constructed a weighted co-listening graph with **19,151 songs and 2,902,517 edges**. Persistent homology was then computed on a 1,200-song TDA subset. Its most persistent detected H₁ class appeared at filtration value 1.0 and died at 2.0, for a persistence of 1.0.
+The figure below shows a **6-nearest-neighbor graph built in standardized acoustic feature space and rendered in the UMAP embedding**. Nodes are colored by the seven detected acoustic clusters; edges show local acoustic connectivity. For the 50,000-song run, the visualization includes 50,004 songs and a 30,000-edge display sample.
 
-The figure maps a reconstructed representative cycle onto the acoustic UMAP embedding at the feature's birth, midpoint, and death. It illustrates how the detected behavioral loop changes with filtration scale; it should be read as one representative feature of this sample, not as a universal structure across the full dataset.
+This view makes the large-scale cluster geometry and cross-cluster connections visible. The persistent-homology stage then measures connected components and loops in the acoustic and behavioral distance spaces; the explicit H₁ cycle reconstruction remains available in [`cycle_analysis.ipynb`](cycle_analysis.ipynb).
 
-![Behavioral H1 representative cycle at birth, midpoint, and death](figures/behavioral_h1_cycle_birth_mid_death.png)
-
+![k-nearest-neighbor connectivity across acoustic song clusters](graphs/50000_knn.png)
 
 ## 1. Requirements
 
