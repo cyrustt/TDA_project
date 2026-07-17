@@ -1,4 +1,4 @@
-# feature_pipeline.py  — summary-file based pipeline
+# feature_pipeline.py: Summary-file-based pipeline
 import os, json, random
 from pathlib import Path
 
