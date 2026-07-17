@@ -13,6 +13,14 @@ This repository implements a complete workflow for analyzing the Million Song Da
 
 Everything is designed to be fully reproducible, scalable, and friendly for graders/researchers.
 
+## Representative result
+
+In the 50,000-song run, the behavioral pipeline constructed a weighted co-listening graph with **19,151 songs and 2,902,517 edges**. Persistent homology was then computed on a 1,200-song TDA subset. Its most persistent detected H₁ class appeared at filtration value 1.0 and died at 2.0, for a persistence of 1.0.
+
+The figure maps a reconstructed representative cycle onto the acoustic UMAP embedding at the feature's birth, midpoint, and death. It illustrates how the detected behavioral loop changes with filtration scale; it should be read as one representative feature of this sample, not as a universal structure across the full dataset.
+
+![Behavioral H1 representative cycle at birth, midpoint, and death](figures/behavioral_h1_cycle_birth_mid_death.png)
+
 
 ## 1. Requirements
 
