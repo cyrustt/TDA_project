@@ -1,4 +1,4 @@
-# hdf5_getters.py  — Python 3 / PyTables 3 compatible
+# hdf5_getters.py: Python 3 / PyTables 3 compatible
 # Minimal, self-contained reimplementation of the getters used in:
 #   - create_aggregate_file.py / hdf5_utils.py
 #   - feature_pipeline.py
