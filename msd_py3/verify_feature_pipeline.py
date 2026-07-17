@@ -69,7 +69,7 @@ def main():
 
     ok((means < 0.25).all(), "standardized means ~ 0 (|mean| < 0.25)")
 
-    # If any column is constant, std≈0 — allowed.
+    # If any column is constant, std≈0 is allowed.
     nonconstant = stds > 0.05
     ok((stds[nonconstant].sub(1).abs() < 0.25).all(),
        "standardized std ~ 1 on nonconstant columns")
